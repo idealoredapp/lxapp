@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.2.0
+# Versión: 1.3.0
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.2.0                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.3.0                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -32,6 +32,92 @@ mostrar_encabezado() {
 pausar() {
     echo ""
     read -p "Presiona ENTER para continuar..."
+}
+
+#########################################
+# SISTEMA DE REPORTES
+#########################################
+
+# Directorio para guardar reportes
+REPORTS_DIR="$HOME/lxapp_reports"
+
+# Crear directorio de reportes si no existe
+crear_directorio_reportes() {
+    if [[ ! -d "$REPORTS_DIR" ]]; then
+        mkdir -p "$REPORTS_DIR"
+        echo -e "${GREEN}Directorio de reportes creado: $REPORTS_DIR${NC}"
+    fi
+}
+
+# Función para generar nombre de archivo de reporte
+generar_nombre_reporte() {
+    local tipo="$1"
+    local timestamp=$(date +"%Y%m%d_%H%M%S")
+    local hostname=$(hostname -s)
+    echo "${REPORTS_DIR}/${hostname}_${tipo}_${timestamp}.txt"
+}
+
+# Función para iniciar reporte
+iniciar_reporte() {
+    local archivo="$1"
+    local titulo="$2"
+    
+    cat > "$archivo" << EOF
+╔════════════════════════════════════════════════════════════════╗
+║                    🖥️  LXApp - Reporte de Pruebas             ║
+║                      www.idealored.com                         ║
+╚════════════════════════════════════════════════════════════════╝
+
+TÍTULO: $titulo
+SERVIDOR: $(hostname)
+FECHA: $(date '+%Y-%m-%d %H:%M:%S')
+SISTEMA: $(cat /etc/os-release 2>/dev/null | grep PRETTY_NAME | cut -d'"' -f2 || uname -s)
+KERNEL: $(uname -r)
+
+════════════════════════════════════════════════════════════════
+EOF
+}
+
+# Función para añadir sección al reporte
+añadir_seccion() {
+    local archivo="$1"
+    local titulo="$2"
+    
+    cat >> "$archivo" << EOF
+
+────────────────────────────────────────────────────────────────
+$titulo
+────────────────────────────────────────────────────────────────
+EOF
+}
+
+# Función para finalizar reporte
+finalizar_reporte() {
+    local archivo="$1"
+    
+    cat >> "$archivo" << EOF
+
+════════════════════════════════════════════════════════════════
+Reporte generado por LXApp v1.2.0
+Desarrollado por idealored.com
+════════════════════════════════════════════════════════════════
+EOF
+    
+    echo ""
+    echo -e "${GREEN}✓ Reporte guardado en: ${NC}${YELLOW}$archivo${NC}"
+    echo -e "${CYAN}  Para ver el reporte: ${NC}nano $archivo"
+    echo -e "${CYAN}  O ejecuta: ${NC}cat $archivo"
+}
+
+# Función para preguntar si guardar reporte
+preguntar_guardar_reporte() {
+    echo ""
+    read -p "¿Guardar reporte de esta prueba? (s/n): " guardar
+    if [[ $guardar == "s" || $guardar == "S" ]]; then
+        return 0  # Sí guardar
+    else
+        return 1  # No guardar
+    fi
 }
 
 #########################################
@@ -57,6 +143,7 @@ submenu_rendimiento() {
         echo "10) Stress Test del Sistema"
         echo ""
         echo "11) Actualizar Herramientas de Benchmarking"
+        echo "12) Ver Reportes Guardados"
         echo "0) Volver al Menú Principal"
         echo ""
         read -p "Selecciona una opción: " opcion
@@ -121,17 +208,86 @@ submenu_rendimiento() {
             5)
                 mostrar_encabezado
                 echo -e "${YELLOW}=== Test Completo del Sistema ===${NC}"
-                echo "CPU:"
-                lscpu | grep "Model name"
+                
+                # Preguntar si guardar reporte
                 echo ""
-                echo "Memoria:"
+                read -p "¿Guardar reporte en archivo? (s/n): " guardar_reporte
+                
+                # Si quiere guardar, crear el reporte
+                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
+                    crear_directorio_reportes
+                    REPORT_FILE=$(generar_nombre_reporte "test_completo")
+                    iniciar_reporte "$REPORT_FILE" "Test Completo del Sistema"
+                fi
+                
+                # CPU
+                echo -e "${CYAN}CPU:${NC}"
+                cpu_info=$(lscpu | grep "Model name" | cut -d':' -f2 | xargs)
+                echo "$cpu_info"
+                cores=$(nproc)
+                echo "Cores: $cores"
+                
+                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
+                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE CPU"
+                    lscpu >> "$REPORT_FILE"
+                fi
+                
+                # Memoria
+                echo ""
+                echo -e "${CYAN}Memoria:${NC}"
                 free -h
+                
+                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
+                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE MEMORIA"
+                    free -h >> "$REPORT_FILE"
+                    echo "" >> "$REPORT_FILE"
+                    cat /proc/meminfo >> "$REPORT_FILE" 2>/dev/null
+                fi
+                
+                # Disco
                 echo ""
-                echo "Disco:"
+                echo -e "${CYAN}Disco:${NC}"
                 df -h
+                
+                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
+                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE DISCO"
+                    df -h >> "$REPORT_FILE"
+                    echo "" >> "$REPORT_FILE"
+                    echo "Uso de disco por directorio:" >> "$REPORT_FILE"
+                    du -sh /* 2>/dev/null | sort -hr | head -10 >> "$REPORT_FILE"
+                fi
+                
+                # Red
                 echo ""
-                echo "Red:"
+                echo -e "${CYAN}Red:${NC}"
                 ip -brief address
+                
+                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
+                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE RED"
+                    ip -brief address >> "$REPORT_FILE"
+                    echo "" >> "$REPORT_FILE"
+                    echo "Interfaces de red:" >> "$REPORT_FILE"
+                    ip link show >> "$REPORT_FILE" 2>/dev/null
+                fi
+                
+                # Uptime y load average
+                echo ""
+                echo -e "${CYAN}Sistema:${NC}"
+                uptime
+                
+                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
+                    añadir_seccion "$REPORT_FILE" "ESTADO DEL SISTEMA"
+                    uptime >> "$REPORT_FILE"
+                    echo "" >> "$REPORT_FILE"
+                    echo "Procesos en ejecución:" >> "$REPORT_FILE"
+                    ps aux --sort=-%cpu | head -15 >> "$REPORT_FILE" 2>/dev/null
+                fi
+                
+                # Finalizar reporte
+                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
+                    finalizar_reporte "$REPORT_FILE"
+                fi
+                
                 pausar
                 ;;
             6)
@@ -310,6 +466,58 @@ submenu_rendimiento() {
                 echo "- htop (Monitor de procesos)"
                 echo "- ioping (Latencia de disco)"
                 echo "- stress-ng (Stress test)"
+                pausar
+                ;;
+            12)
+                mostrar_encabezado
+                echo -e "${YELLOW}=== Reportes Guardados ===${NC}"
+                echo ""
+                
+                if [[ ! -d "$REPORTS_DIR" ]] || [[ -z "$(ls -A $REPORTS_DIR 2>/dev/null)" ]]; then
+                    echo -e "${YELLOW}No hay reportes guardados aún.${NC}"
+                    echo "Los reportes se guardan en: $REPORTS_DIR"
+                    echo ""
+                    echo "Ejecuta pruebas y selecciona 'guardar reporte' para crear reportes."
+                else
+                    echo "Directorio de reportes: $REPORTS_DIR"
+                    echo ""
+                    echo "Reportes disponibles:"
+                    echo ""
+                    
+                    # Listar reportes con numeración
+                    mapfile -t reportes < <(ls -1t "$REPORTS_DIR"/*.txt 2>/dev/null)
+                    
+                    if [[ ${#reportes[@]} -eq 0 ]]; then
+                        echo -e "${YELLOW}No hay reportes .txt guardados.${NC}"
+                    else
+                        for i in "${!reportes[@]}"; do
+                            archivo="${reportes[$i]}"
+                            nombre=$(basename "$archivo")
+                            tamano=$(du -h "$archivo" | cut -f1)
+                            fecha=$(date -r "$archivo" "+%Y-%m-%d %H:%M" 2>/dev/null || echo "N/A")
+                            echo "$((i+1))) $nombre ($tamano) - $fecha"
+                        done
+                        
+                        echo ""
+                        echo "Opciones:"
+                        echo "- Escribe número para ver el reporte"
+                        echo "- Enter para volver"
+                        echo ""
+                        read -p "Selección: " sel
+                        
+                        if [[ "$sel" =~ ^[0-9]+$ ]] && [[ $sel -ge 1 ]] && [[ $sel -le ${#reportes[@]} ]]; then
+                            archivo_sel="${reportes[$((sel-1))]}"
+                            echo ""
+                            echo -e "${GREEN}Mostrando: $(basename "$archivo_sel")${NC}"
+                            echo ""
+                            cat "$archivo_sel"
+                            echo ""
+                            echo -e "${CYAN}Para editar: ${NC}nano $archivo_sel"
+                            echo -e "${CYAN}Ruta completa: ${NC}$archivo_sel"
+                        fi
+                    fi
+                fi
+                
                 pausar
                 ;;
             0)

@@ -5,6 +5,33 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.3.0] - 2026-01-04
+
+### ✨ Añadido
+- **Sistema de Reportes Completo**:
+  - Generación automática de reportes en archivos .txt
+  - Directorio centralizado: `~/lxapp_reports/`
+  - Reporte del Test Completo con información detallada del sistema
+  - Opción para guardar o no al finalizar cada prueba
+  - Nueva opción 12: "Ver Reportes Guardados"
+  - Listado de reportes con fecha, tamaño y nombre
+  - Visualización directa de reportes desde el menú
+  - Instrucciones para abrir con nano o cat
+
+### 🔧 Funcionalidades del Sistema de Reportes
+- Crear directorio automático de reportes
+- Nombres de archivo con timestamp y hostname
+- Encabezados formatados con información del servidor
+- Secciones organizadas por tipo de información
+- Footer con branding LXApp + idealored.com
+
+###  📝 Estructura de Reportes
+- CPU: Información completa del procesador
+- Memoria: free + /proc/meminfo
+- Disco: df + uso por directorio (top 10)
+- Red: interfaces + configuración
+- Sistema: uptime + procesos activos
+
 ## [1.2.0] - 2026-01-04
 
 ### ✨ Añadido
