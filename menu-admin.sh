@@ -1,7 +1,10 @@
 #!/bin/bash
 
 #########################################
-# Script de Administración de Sistemas
+# LXApp - Sistema de Administración de Servidores
+# Versión: 1.1.0
+# Autor: idealored (www.idealored.com)
+# Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
 #########################################
 
@@ -18,7 +21,9 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║   SISTEMA DE ADMINISTRACIÓN DE SERVIDORES      ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.1.0                  ║${NC}"
+    echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
+    echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
     echo ""
 }

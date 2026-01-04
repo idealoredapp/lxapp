@@ -1,4 +1,4 @@
-# 🖥️ Sistema de Administración de Servidores Linux
+# 🖥️ LXApp - Sistema de Administración de Servidores Linux
 
 Script interactivo con menús modulares para la administración y monitorización de servidores Linux, con módulo profesional de gestión de Ceph Storage.
 
@@ -6,6 +6,9 @@ Script interactivo con menús modulares para la administración y monitorizació
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)
 ![Ceph](https://img.shields.io/badge/ceph-v18%20%7C%20v19-red.svg)
+![Website](https://img.shields.io/badge/web-idealored.com-blue.svg)
+
+> 🌐 **Desarrollado por [idealored.com](https://www.idealored.com)**
 
 ## 📋 Características
 
@@ -201,8 +204,9 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 **idealored**
 
-- GitHub: [@idealoredapp](https://github.com/idealoredapp)
-- Repositorio: [lxapp](https://github.com/idealoredapp/lxapp)
+- 🌐 Website: [idealored.com](https://www.idealored.com)
+- 💻 GitHub: [@idealoredapp](https://github.com/idealoredapp)
+- 📦 Repositorio: [lxapp](https://github.com/idealoredapp/lxapp)
 
 ## 🙏 Agradecimientos
 
