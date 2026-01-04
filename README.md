@@ -2,7 +2,7 @@
 
 Script interactivo con menús modulares para la administración y monitorización de servidores Linux, con módulo profesional de gestión de Ceph Storage.
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)
 ![Ceph](https://img.shields.io/badge/ceph-v18%20%7C%20v19-red.svg)
@@ -176,13 +176,18 @@ El script utiliza las siguientes herramientas (se instalan automáticamente si f
 
 Ver el archivo [CHANGELOG.md](CHANGELOG.md) para el historial completo de cambios.
 
-### Versión Actual: 1.1.0
+### Versión Actual: 1.3.0
 
 - ✅ Menú principal con navegación modular
-- ✅ Módulo de pruebas de rendimiento completo
+- ✅ **Módulo de pruebas de rendimiento ampliado** (12 opciones)
+  - Pruebas básicas: CPU, RAM, Disco, Red
+  - Pruebas avanzadas: Multi-thread, iperf3, ioping, DB, stress-ng
 - ✅ **Módulo profesional de gestión de Ceph (v18/v19)**
+- ✅ **Sistema de reportes guardables en archivos**
+  - Generación automática en ~/lxapp_reports/
+  - Ver y gestionar reportes guardados
+  - Formato profesional con timestamp
 - ✅ Módulo de monitorización del sistema
-- ✅ Sistema de actualización independiente por módulo
 - ✅ Bootstrap y gestión de clusters Ceph
 - ✅ Soporte para entornos LOCAL y EXTERNO
 
