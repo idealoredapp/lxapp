@@ -1,16 +1,21 @@
 # 🖥️ Sistema de Administración de Servidores Linux
 
-Script interactivo con menús modulares para la administración y monitorización de servidores Linux.
+Script interactivo con menús modulares para la administración y monitorización de servidores Linux, con módulo profesional de gestión de Ceph Storage.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)
+![Ceph](https://img.shields.io/badge/ceph-v18%20%7C%20v19-red.svg)
 
 ## 📋 Características
 
 - **Menú Modular**: Navegación intuitiva entre diferentes módulos
 - **Pruebas de Rendimiento**: Tests de CPU, Memoria, Disco y Red
-- **Gestión de Ceph**: Instalación, configuración y administración de Ceph Storage
+- **Gestión Profesional de Ceph**: 
+  - Selección de versión (v18 Reef / v19 Squid)
+  - Bootstrap y configuración de clusters
+  - Gestión de nodos y OSDs
+  - Soporte para entornos LOCAL y EXTERNO (datacenter)
 - **Monitorización en Tiempo Real**: Seguimiento de procesos, servicios y recursos
 - **Actualización Independiente**: Actualiza solo los componentes que necesites
 - **Interfaz Colorida**: Mejor visualización con códigos de color ANSI
@@ -27,10 +32,10 @@ Script interactivo con menús modulares para la administración y monitorizació
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/TU_USUARIO/admin-server-menu.git
+git clone https://github.com/idealoredapp/lxapp.git
 
 # Navegar al directorio
-cd admin-server-menu
+cd lxapp
 
 # Dar permisos de ejecución
 chmod +x menu-admin.sh
@@ -65,14 +70,31 @@ Realiza pruebas exhaustivas del servidor:
 - **Test de Red**: Ping y velocidad de conexión
 - **Test Completo**: Resumen de todos los recursos
 
-#### 💾 Gestión de Ceph
+#### 💾 Gestión Profesional de Ceph
 
-Administra tu cluster de almacenamiento Ceph:
-- Instalación automatizada de Ceph
-- Verificación de estado del cluster
-- Configuración de nuevos OSDs
-- Gestión de pools
-- Visualización de logs
+Administra tu cluster de almacenamiento Ceph con funcionalidades avanzadas:
+
+**Características principales:**
+- **Selección de Versión**: Elige entre Ceph v18 (Reef) o v19 (Squid)
+- **Bootstrap de Cluster**: Inicializa el primer nodo con cephadm
+- **Gestión de Nodos**: Añade nodos adicionales al cluster
+- **Gestión de OSDs**: Detección inteligente y configuración de discos
+- **Entornos Múltiples**: Soporte para LOCAL (LAN) y EXTERNO (datacenter)
+- **Dashboard**: Configuración automática con IPs internas/externas
+- **Recuperación**: Purgar clusters rotos por FSID
+- **Dependencias**: Instalación automática (podman, chrony, lvm2)
+
+**Menú del módulo:**
+```
+1) Seleccionar versión Ceph (v18 o v19)
+2) Instalar PRIMER nodo (bootstrap)
+3) Añadir NODO adicional
+4) Agregar OSDs (en ESTE nodo)
+5) Ver estado del cluster
+6) Cambiar contraseña dashboard
+7) Ver nodos y OSDs
+8) Purgar cluster roto (FSID)
+```
 
 #### 📊 Monitorización del Sistema
 
@@ -87,12 +109,22 @@ Monitorea tu servidor en tiempo real:
 
 El script utiliza las siguientes herramientas (se instalan automáticamente si faltan):
 
+**Rendimiento:**
 - `sysbench` - Benchmarking de sistema
-- `htop` - Monitor de procesos interactivo
 - `speedtest-cli` - Test de velocidad de red
 - `iperf3` - Medición de ancho de banda
-- `ceph` - Gestión de almacenamiento distribuido
+
+**Monitorización:**
+- `htop` - Monitor de procesos interactivo
 - `sysstat` - Utilidades de monitorización
+- `iotop` - Monitor de I/O
+- `nethogs` - Monitor de ancho de banda por proceso
+
+**Ceph Storage:**
+- `cephadm` - Orquestador de Ceph (v18/v19)
+- `podman` - Motor de contenedores
+- `chrony` - Sincronización de tiempo
+- `lvm2` - Gestión de volúmenes lógicos
 
 ## 📝 Ejemplos de Uso
 
@@ -104,12 +136,29 @@ El script utiliza las siguientes herramientas (se instalan automáticamente si f
 # Luego opción 5 (Test Completo)
 ```
 
-### Instalar y configurar Ceph
+### Bootstrap de cluster Ceph
 
 ```bash
 ./menu-admin.sh
 # Seleccionar opción 2 (Gestión de Ceph)
-# Luego opción 1 (Instalar Ceph)
+# Opción 1: Seleccionar versión (v18 o v19)
+# Opción 2: Instalar PRIMER nodo (bootstrap)
+#   - Elegir entorno: LOCAL o EXTERNO
+#   - Ingresar IP interna del nodo
+#   - (Opcional) IP externa para dashboard
+#   - Configurar red de cluster
+#   - Establecer contraseña del dashboard
+```
+
+### Añadir nodo al cluster Ceph
+
+```bash
+./menu-admin.sh
+# Seleccionar opción 2 (Gestión de Ceph)
+# Opción 3: Añadir NODO adicional
+#   - Ingresar hostname del nuevo nodo
+#   - Ingresar IP interna del nodo
+#   - Ingresar IP del master para SSH
 ```
 
 ### Monitorizar procesos en tiempo real
@@ -124,13 +173,15 @@ El script utiliza las siguientes herramientas (se instalan automáticamente si f
 
 Ver el archivo [CHANGELOG.md](CHANGELOG.md) para el historial completo de cambios.
 
-### Versión Actual: 1.0.0
+### Versión Actual: 1.1.0
 
-- Menú principal con navegación modular
-- Módulo de pruebas de rendimiento
-- Módulo de gestión de Ceph
-- Módulo de monitorización del sistema
-- Sistema de actualización independiente por módulo
+- ✅ Menú principal con navegación modular
+- ✅ Módulo de pruebas de rendimiento completo
+- ✅ **Módulo profesional de gestión de Ceph (v18/v19)**
+- ✅ Módulo de monitorización del sistema
+- ✅ Sistema de actualización independiente por módulo
+- ✅ Bootstrap y gestión de clusters Ceph
+- ✅ Soporte para entornos LOCAL y EXTERNO
 
 ## 🤝 Contribuir
 
@@ -148,21 +199,23 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 👤 Autor
 
-**Tu Nombre**
+**idealored**
 
-- GitHub: [@TU_USUARIO](https://github.com/TU_USUARIO)
+- GitHub: [@idealoredapp](https://github.com/idealoredapp)
+- Repositorio: [lxapp](https://github.com/idealoredapp/lxapp)
 
 ## 🙏 Agradecimientos
 
 - Comunidad de código abierto
 - Documentación oficial de Ceph
 - Proyecto sysbench
+- Proyecto cephadm
 
 ## 📞 Soporte
 
 Si encuentras algún problema o tienes sugerencias:
 
-- Abre un [Issue](https://github.com/TU_USUARIO/admin-server-menu/issues)
+- Abre un [Issue](https://github.com/idealoredapp/lxapp/issues)
 - Contacta al autor
 
 ---
