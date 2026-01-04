@@ -1,0 +1,61 @@
+# Archivos de configuración local
+*.conf.local
+*.config.local
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Archivos temporales
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Archivos de backup
+*.bak
+*.backup
+*~
+*.swp
+*.swo
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+
+# Archivos de prueba y desarrollo
+test_output/
+benchmark_results/
+*.test
+
+# Credenciales y secretos
+*secret*
+*password*
+*credentials*
+.env
+.env.local
+keys/
+*.key
+*.pem
+
+# Archivos generados
+generated/
+build/
+dist/
+
+# Archivos de Ceph (si se generan localmente)
+ceph.conf.local
+keyring.local
+
+# Cache
+.cache/
+__pycache__/
+*.pyc

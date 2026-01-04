@@ -1,0 +1,38 @@
+# ============================================
+# COMANDOS PARA SUBIR A GITHUB
+# Copia y pega estos comandos uno por uno
+# ============================================
+
+# PASO 1: Configura tu información (MODIFICA ESTOS VALORES)
+# Reemplaza "Tu Nombre" y "tu@email.com" con tus datos
+
+git config user.name "Tu Nombre"
+git config user.email "tu@email.com"
+
+# PASO 2: Inicializa el repositorio
+git init
+
+# PASO 3: Agrega todos los archivos
+git add .
+
+# PASO 4: Ver qué archivos se van a subir (opcional)
+git status
+
+# PASO 5: Crea el primer commit
+git commit -m "feat: versión inicial del sistema de administración de servidores"
+
+# PASO 6: Renombra la rama a main
+git branch -M main
+
+# PASO 7: Conecta con tu repositorio de GitHub
+# IMPORTANTE: Reemplaza la URL con la de TU repositorio
+git remote add origin https://github.com/TU_USUARIO/TU_REPOSITORIO.git
+
+# PASO 8: Sube los archivos a GitHub
+git push -u origin main
+
+# PASO 9: Crea la versión inicial (tag)
+git tag -a v1.0.0 -m "Versión 1.0.0 - Lanzamiento inicial"
+git push origin v1.0.0
+
+# ¡LISTO! Tu proyecto está en GitHub
