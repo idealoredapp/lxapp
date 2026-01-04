@@ -5,6 +5,26 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.5.0] - 2026-01-04
+
+### ✨ Añadido
+- **Stress Test (opción 10) ahora con verificación automática**
+  - Detecta si falta `stress-ng` antes de ejecutar
+  - Pregunta e instala automáticamente si acepta el usuario
+  - Compatible con sistemas sin sudo (detecta root)
+- **Generación automática de reporte del stress test**
+  - Guarda en `~/lxapp_reports/test_estres_*.txt`
+  - Incluye configuración del test (nivel, duración, comando)
+  - Captura todas las métricas de stress-ng
+  - Timestamps de inicio y fin
+  - Formato profesional comparable
+
+### 🔧 Mejorado
+- Opción 10 ahora tiene mismo nivel de UX que opción 5
+- Instalación automática sin sudo en contenedores LXC
+- Reportes guardados automáticamente sin preguntar
+- Niveles de stress con nombres descriptivos (LIGERO/MODERADO/INTENSO)
+
 ## [1.4.2] - 2026-01-04
 
 ### 🐛 Corregido

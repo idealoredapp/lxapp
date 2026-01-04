@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.4.2
+# Versión: 1.5.0
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.4.2                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.5.0                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -609,43 +609,153 @@ submenu_rendimiento() {
                 echo -e "${RED}⚠️  ADVERTENCIA: Esta prueba pondrá el sistema bajo carga extrema${NC}"
                 read -p "¿Continuar? (si/no): " confirmar
                 
-                if [[ $confirmar == "si" ]]; then
-                    if command -v stress-ng &> /dev/null; then
-                        num_cpus=$(nproc)
+                if [[ $confirmar != "si" ]]; then
+                    echo "Stress test cancelado."
+                    pausar
+                    continue
+                fi
+                
+                # ═══════════════════════════════════════════════════════
+                # VERIFICAR STRESS-NG
+                # ═══════════════════════════════════════════════════════
+                echo ""
+                echo -e "${CYAN}Verificando herramientas necesarias...${NC}"
+                
+                if ! command -v stress-ng &> /dev/null; then
+                    echo ""
+                    echo -e "${YELLOW}⚠️  stress-ng no está instalado${NC}"
+                    echo ""
+                    read -p "¿Instalar stress-ng ahora? (s/n): " instalar_stress
+                    
+                    if [[ $instalar_stress == "s" || $instalar_stress == "S" ]]; then
                         echo ""
-                        echo "Configuración del stress test:"
-                        echo "1) Stress ligero (30 segundos)"
-                        echo "2) Stress moderado (60 segundos)"
-                        echo "3) Stress intenso (120 segundos)"
-                        echo "4) Personalizado"
-                        read -p "Selecciona: " stress_opt
+                        echo -e "${GREEN}Instalando stress-ng...${NC}"
                         
-                        case $stress_opt in
-                            1) tiempo=30; carga="--cpu $num_cpus --vm 2 --vm-bytes 128M" ;;
-                            2) tiempo=60; carga="--cpu $num_cpus --vm 4 --vm-bytes 256M --io 2" ;;
-                            3) tiempo=120; carga="--cpu $num_cpus --vm 4 --vm-bytes 512M --io 4 --hdd 2" ;;
-                            4) 
-                                read -p "Duración en segundos: " tiempo
-                                read -p "Workers de CPU: " cpu_w
-                                read -p "Workers de VM: " vm_w
-                                carga="--cpu ${cpu_w:-$num_cpus} --vm ${vm_w:-2} --vm-bytes 256M"
-                                ;;
-                            *) tiempo=30; carga="--cpu $num_cpus --vm 2 --vm-bytes 128M" ;;
-                        esac
+                        # Detectar si necesitamos sudo
+                        SUDO_CMD=""
+                        if [[ $EUID -ne 0 ]]; then
+                            if command -v sudo &> /dev/null; then
+                                SUDO_CMD="sudo"
+                            else
+                                echo -e "${RED}ERROR: No tienes permisos de root y sudo no está instalado.${NC}"
+                                echo "Instala stress-ng manualmente: apt install stress-ng"
+                                pausar
+                                continue
+                            fi
+                        fi
                         
-                        echo ""
-                        echo -e "${GREEN}Iniciando stress test por ${tiempo}s...${NC}"
-                        echo "Monitorea con 'htop' en otra terminal"
-                        stress-ng $carga --timeout ${tiempo}s --metrics-brief
+                        $SUDO_CMD apt update
+                        $SUDO_CMD apt install -y stress-ng
                         
-                        echo ""
-                        echo -e "${GREEN}Stress test completado. Revisa las métricas de carga.${NC}"
+                        if command -v stress-ng &> /dev/null; then
+                            echo -e "${GREEN}✓ stress-ng instalado correctamente${NC}"
+                        else
+                            echo -e "${RED}✗ Error al instalar stress-ng${NC}"
+                            pausar
+                            continue
+                        fi
                     else
-                        echo -e "${RED}stress-ng no está instalado. Instala con: sudo apt install stress-ng${NC}"
+                        echo "Stress test cancelado. Instala stress-ng con: apt install stress-ng"
+                        pausar
+                        continue
                     fi
                 else
-                    echo "Stress test cancelado."
+                    echo -e "${GREEN}  ✓ stress-ng está instalado${NC}"
                 fi
+                
+                # ═══════════════════════════════════════════════════════
+                # CONFIGURAR STRESS TEST
+                # ═══════════════════════════════════════════════════════
+                num_cpus=$(nproc)
+                echo ""
+                echo "Configuración del stress test:"
+                echo "1) Stress ligero (30 segundos)"
+                echo "2) Stress moderado (60 segundos)"
+                echo "3) Stress intenso (120 segundos)"
+                echo "4) Personalizado"
+                read -p "Selecciona: " stress_opt
+                
+                case $stress_opt in
+                    1) 
+                        tiempo=30
+                        carga="--cpu $num_cpus --vm 2 --vm-bytes 128M"
+                        nivel="LIGERO"
+                        ;;
+                    2) 
+                        tiempo=60
+                        carga="--cpu $num_cpus --vm 4 --vm-bytes 256M --io 2"
+                        nivel="MODERADO"
+                        ;;
+                    3) 
+                        tiempo=120
+                        carga="--cpu $num_cpus --vm 4 --vm-bytes 512M --io 4 --hdd 2"
+                        nivel="INTENSO"
+                        ;;
+                    4) 
+                        read -p "Duración en segundos: " tiempo
+                        read -p "Workers de CPU: " cpu_w
+                        read -p "Workers de VM: " vm_w
+                        carga="--cpu ${cpu_w:-$num_cpus} --vm ${vm_w:-2} --vm-bytes 256M"
+                        nivel="PERSONALIZADO"
+                        ;;
+                    *) 
+                        tiempo=30
+                        carga="--cpu $num_cpus --vm 2 --vm-bytes 128M"
+                        nivel="LIGERO (por defecto)"
+                        ;;
+                esac
+                
+                # ═══════════════════════════════════════════════════════
+                # CREAR REPORTE
+                # ═══════════════════════════════════════════════════════
+                crear_directorio_reportes
+                REPORT_FILE=$(generar_nombre_reporte "test_estres")
+                iniciar_reporte "$REPORT_FILE" "Stress Test del Sistema - $nivel"
+                
+                añadir_seccion "$REPORT_FILE" "CONFIGURACIÓN DEL STRESS TEST"
+                {
+                    echo "Nivel: $nivel"
+                    echo "Duración: ${tiempo}s"
+                    echo "CPUs disponibles: $num_cpus"
+                    echo "Comando: stress-ng $carga --timeout ${tiempo}s --metrics-brief"
+                    echo ""
+                    echo "Hora de inicio: $(date '+%Y-%m-%d %H:%M:%S')"
+                } >> "$REPORT_FILE"
+                
+                # ═══════════════════════════════════════════════════════
+                # EJECUTAR STRESS TEST
+                # ═══════════════════════════════════════════════════════
+                echo ""
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+                echo -e "${GREEN}Iniciando stress test por ${tiempo}s...${NC}"
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+                echo ""
+                echo -e "${CYAN}💡 TIP: Monitorea con 'htop' en otra terminal${NC}"
+                echo ""
+                
+                añadir_seccion "$REPORT_FILE" "RESULTADOS DEL STRESS TEST"
+                
+                # Ejecutar y capturar resultados
+                stress_output=$(stress-ng $carga --timeout ${tiempo}s --metrics-brief 2>&1)
+                
+                # Guardar en reporte
+                echo "$stress_output" >> "$REPORT_FILE"
+                
+                # Mostrar en pantalla
+                echo "$stress_output"
+                
+                # Añadir información final
+                echo "" >> "$REPORT_FILE"
+                echo "Hora de finalización: $(date '+%Y-%m-%d %H:%M:%S')" >> "$REPORT_FILE"
+                
+                # Finalizar reporte
+                finalizar_reporte "$REPORT_FILE"
+                
+                echo ""
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+                echo -e "${GREEN}       ✓ STRESS TEST COMPLETADO                       ${NC}"
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+                
                 pausar
                 ;;
             11)
