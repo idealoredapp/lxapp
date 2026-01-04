@@ -5,6 +5,23 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.4.2] - 2026-01-04
+
+### 🐛 Corregido
+- **Compatibilidad total con sistemas sin sudo**
+- Detecta automáticamente si el usuario es root (`$EUID -ne 0`)
+- Usa `sudo` solo cuando es necesario y está disponible
+- Permite ejecución directa como root (contenedores LXC, VPS)
+- Corregido `apt update/install` para funcionar sin sudo
+- Corregido `drop_caches` para funcionar sin sudo
+- Mensajes de error claros cuando no hay permisos
+
+### 📝 Casos soportados
+- ✅ Usuario normal con sudo instalado
+- ✅ Usuario root directo (sin necesidad de sudo)
+- ✅ Contenedores LXC ejecutando como root
+- ❌ Usuario sin privilegios y sin sudo (muestra error con instrucciones)
+
 ## [1.4.1] - 2026-01-04
 
 ### ✨ Añadido

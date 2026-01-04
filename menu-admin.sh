@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.4.1
+# Versión: 1.4.2
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.4.1                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.4.2                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -256,8 +256,27 @@ submenu_rendimiento() {
                     if [[ $instalar == "s" || $instalar == "S" ]]; then
                         echo ""
                         echo -e "${GREEN}Instalando herramientas...${NC}"
-                        sudo apt update
-                        sudo apt install -y sysbench
+                        
+                        # Detectar si necesitamos sudo o si ya somos root
+                        SUDO_CMD=""
+                        if [[ $EUID -ne 0 ]]; then
+                            # No somos root, verificar si sudo está disponible
+                            if command -v sudo &> /dev/null; then
+                                SUDO_CMD="sudo"
+                            else
+                                echo -e "${RED}ERROR: No tienes permisos de root y sudo no está instalado.${NC}"
+                                echo "Opciones:"
+                                echo "  1. Ejecuta el script como root: su -"
+                                echo "  2. Instala sudo: apt install sudo (como root)"
+                                echo "  3. Instala sysbench manualmente: apt install sysbench"
+                                pausar
+                                continue
+                            fi
+                        fi
+                        # Si somos root (EUID=0), SUDO_CMD queda vacío y ejecutamos directamente
+                        
+                        $SUDO_CMD apt update
+                        $SUDO_CMD apt install -y sysbench
                         
                         # Verificar instalación exitosa
                         if command -v sysbench &> /dev/null; then
@@ -403,7 +422,18 @@ submenu_rendimiento() {
                 
                 # Limpiar cache
                 sync
-                echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null 2>&1
+                # Usar sudo solo si no somos root
+                if [[ $EUID -ne 0 ]]; then
+                    if command -v sudo &> /dev/null; then
+                        echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null 2>&1
+                    else
+                        # Sin sudo y sin root, intentar directo (puede fallar, no es crítico)
+                        echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+                    fi
+                else
+                    # Somos root, ejecutar directo
+                    echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+                fi
                 
                 read_result=$(dd if=/tmp/lxapp_test_write of=/dev/null bs=1M 2>&1)
                 read_speed=$(echo "$read_result" | grep -oP '\d+(\.\d+)? [MG]B/s' | tail -1)
