@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.4.0
+# Versión: 1.4.1
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.4.0                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.4.1                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -226,6 +226,68 @@ submenu_rendimiento() {
                     echo "Test cancelado."
                     pausar
                     continue
+                fi
+                
+                # ═══════════════════════════════════════════════════════
+                # VERIFICAR HERRAMIENTAS NECESARIAS
+                # ═══════════════════════════════════════════════════════
+                echo ""
+                echo -e "${CYAN}Verificando herramientas necesarias...${NC}"
+                
+                herramientas_faltantes=()
+                
+                # Verificar sysbench (necesario para CPU y RAM)
+                if ! command -v sysbench &> /dev/null; then
+                    herramientas_faltantes+=("sysbench")
+                fi
+                
+                # Mostrar herramientas faltantes
+                if [[ ${#herramientas_faltantes[@]} -gt 0 ]]; then
+                    echo ""
+                    echo -e "${YELLOW}⚠️  Herramientas faltantes detectadas:${NC}"
+                    for tool in "${herramientas_faltantes[@]}"; do
+                        echo "  ✗ $tool"
+                    done
+                    echo ""
+                    echo -e "${CYAN}Necesitas estas herramientas para ejecutar todos los tests.${NC}"
+                    echo ""
+                    read -p "¿Instalar herramientas faltantes ahora? (s/n): " instalar
+                    
+                    if [[ $instalar == "s" || $instalar == "S" ]]; then
+                        echo ""
+                        echo -e "${GREEN}Instalando herramientas...${NC}"
+                        sudo apt update
+                        sudo apt install -y sysbench
+                        
+                        # Verificar instalación exitosa
+                        if command -v sysbench &> /dev/null; then
+                            echo -e "${GREEN}✓ sysbench instalado correctamente${NC}"
+                        else
+                            echo -e "${RED}✗ Error al instalar sysbench${NC}"
+                            echo ""
+                            echo -e "${YELLOW}NOTA: Los tests de CPU y RAM se saltarán.${NC}"
+                            echo "      Solo se ejecutarán tests de disco y red."
+                        fi
+                        echo ""
+                        read -p "Presiona ENTER para continuar con los tests..."
+                    else
+                        echo ""
+                        echo -e "${YELLOW}ADVERTENCIA: Sin sysbench, solo se ejecutarán:${NC}"
+                        echo "  • Test de Disco (lectura/escritura)"
+                        echo "  • Test de Red (latencia)"
+                        echo ""
+                        echo "Los tests de CPU y RAM se saltarán."
+                        echo ""
+                        read -p "¿Continuar de todas formas? (s/n): " continuar_sin_tools
+                        
+                        if [[ $continuar_sin_tools != "s" && $continuar_sin_tools != "S" ]]; then
+                            echo "Test cancelado. Instala sysbench con: sudo apt install sysbench"
+                            pausar
+                            continue
+                        fi
+                    fi
+                else
+                    echo -e "${GREEN}  ✓ Todas las herramientas necesarias están instaladas${NC}"
                 fi
                 
                 # Crear reporte SIEMPRE

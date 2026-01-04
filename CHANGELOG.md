@@ -5,6 +5,22 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.4.1] - 2026-01-04
+
+### ✨ Añadido
+- **Verificación automática de herramientas** antes del test completo
+- **Instalación automática opcional** de herramientas faltantes
+- Detecta si falta `sysbench` antes de ejecutar tests
+- Pregunta al usuario si quiere instalar lo que falta
+- Instala automáticamente con `apt` si el usuario acepta
+- Advertencia clara si se ejecuta sin todas las herramientas
+- Opción para continuar aunque falten herramientas
+
+### 🔧 Mejorado
+- Experiencia de usuario: ya no falla silenciosamente
+- Evita ejecutar tests parciales sin avisar
+- Confirmación antes de modificar el sistema
+
 ## [1.4.0] - 2026-01-04
 
 ### 🚀 Mejorado
