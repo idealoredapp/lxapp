@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.3.0
+# Versión: 1.4.0
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.3.0                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.4.0                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -207,86 +207,191 @@ submenu_rendimiento() {
                 ;;
             5)
                 mostrar_encabezado
-                echo -e "${YELLOW}=== Test Completo del Sistema ===${NC}"
-                
-                # Preguntar si guardar reporte
+                echo -e "${YELLOW}╔══════════════════════════════════════════════════════╗${NC}"
+                echo -e "${YELLOW}║     TEST COMPLETO DE RENDIMIENTO DEL SERVIDOR        ║${NC}"
+                echo -e "${YELLOW}╚══════════════════════════════════════════════════════╝${NC}"
                 echo ""
-                read -p "¿Guardar reporte en archivo? (s/n): " guardar_reporte
+                echo -e "${CYAN}Este test ejecutará TODOS los benchmarks reales:${NC}"
+                echo "  • Test de CPU (single-thread)"
+                echo "  • Test de CPU (multi-thread)"
+                echo "  • Test de Memoria RAM"
+                echo "  • Test de Disco (lectura/escritura)"
+                echo "  • Test de Red (latencia)"
+                echo ""
+                echo -e "${YELLOW}⏱️  Tiempo estimado: 3-5 minutos${NC}"
+                echo ""
+                read -p "¿Continuar con el test completo? (s/n): " continuar
                 
-                # Si quiere guardar, crear el reporte
-                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
-                    crear_directorio_reportes
-                    REPORT_FILE=$(generar_nombre_reporte "test_completo")
-                    iniciar_reporte "$REPORT_FILE" "Test Completo del Sistema"
+                if [[ $continuar != "s" && $continuar != "S" ]]; then
+                    echo "Test cancelado."
+                    pausar
+                    continue
                 fi
                 
-                # CPU
-                echo -e "${CYAN}CPU:${NC}"
-                cpu_info=$(lscpu | grep "Model name" | cut -d':' -f2 | xargs)
-                echo "$cpu_info"
-                cores=$(nproc)
-                echo "Cores: $cores"
+                # Crear reporte SIEMPRE
+                crear_directorio_reportes
+                REPORT_FILE=$(generar_nombre_reporte "benchmark_completo")
+                iniciar_reporte "$REPORT_FILE" "Benchmark Completo de Rendimiento"
                 
-                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
-                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE CPU"
-                    lscpu >> "$REPORT_FILE"
-                fi
-                
-                # Memoria
                 echo ""
-                echo -e "${CYAN}Memoria:${NC}"
-                free -h
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+                echo -e "${GREEN}Iniciando tests de rendimiento...${NC}"
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
                 
-                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
-                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE MEMORIA"
-                    free -h >> "$REPORT_FILE"
+                # ═══════════════════════════════════════════════════════
+                # 1. INFORMACIÓN DEL SISTEMA
+                # ═══════════════════════════════════════════════════════
+                echo ""
+                echo -e "${CYAN}[1/6] Recopilando información del sistema...${NC}"
+                
+                añadir_seccion "$REPORT_FILE" "INFORMACIÓN DEL HARDWARE"
+                {
+                    echo "CPU: $(lscpu | grep 'Model name' | cut -d':' -f2 | xargs)"
+                    echo "Cores: $(nproc)"
+                    echo "Arquitectura: $(uname -m)"
+                    echo ""
+                    echo "Memoria Total: $(free -h | grep Mem | awk '{print $2}')"
+                    echo "Memoria Disponible: $(free -h | grep Mem | awk '{print $7}')"
+                    echo ""
+                    echo "Sistema: $(cat /etc/os-release 2>/dev/null | grep PRETTY_NAME | cut -d'\"' -f2 || uname -s)"
+                    echo "Kernel: $(uname -r)"
+                } >> "$REPORT_FILE"
+                
+                # ═══════════════════════════════════════════════════════
+                # 2. TEST DE CPU SINGLE-THREAD
+                # ═══════════════════════════════════════════════════════
+                echo ""
+                echo -e "${CYAN}[2/6] Test de CPU (single-thread)...${NC}"
+                
+                if command -v sysbench &> /dev/null; then
+                    añadir_seccion "$REPORT_FILE" "TEST DE CPU (SINGLE-THREAD)"
+                    echo "Calculando números primos hasta 20000..." >> "$REPORT_FILE"
                     echo "" >> "$REPORT_FILE"
-                    cat /proc/meminfo >> "$REPORT_FILE" 2>/dev/null
+                    
+                    sysbench cpu --cpu-max-prime=20000 --threads=1 run 2>&1 | tee -a "$REPORT_FILE"
+                    
+                    echo -e "${GREEN}✓ Completado${NC}"
+                else
+                    echo -e "${RED}⚠ sysbench no instalado, saltando...${NC}"
+                    echo "ERROR: sysbench no está instalado" >> "$REPORT_FILE"
                 fi
                 
-                # Disco
+                # ═══════════════════════════════════════════════════════
+                # 3. TEST DE CPU MULTI-THREAD
+                # ═══════════════════════════════════════════════════════
                 echo ""
-                echo -e "${CYAN}Disco:${NC}"
-                df -h
+                echo -e "${CYAN}[3/6] Test de CPU (multi-thread con $(nproc) cores)...${NC}"
                 
-                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
-                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE DISCO"
-                    df -h >> "$REPORT_FILE"
+                if command -v sysbench &> /dev/null; then
+                    añadir_seccion "$REPORT_FILE" "TEST DE CPU (MULTI-THREAD - $(nproc) CORES)"
+                    echo "Calculando números primos hasta 20000 con $(nproc) threads..." >> "$REPORT_FILE"
                     echo "" >> "$REPORT_FILE"
-                    echo "Uso de disco por directorio:" >> "$REPORT_FILE"
-                    du -sh /* 2>/dev/null | sort -hr | head -10 >> "$REPORT_FILE"
+                    
+                    sysbench cpu --cpu-max-prime=20000 --threads=$(nproc) run 2>&1 | tee -a "$REPORT_FILE"
+                    
+                    echo -e "${GREEN}✓ Completado${NC}"
+                else
+                    echo -e "${RED}⚠ sysbench no instalado, saltando...${NC}"
                 fi
                 
-                # Red
+                # ═══════════════════════════════════════════════════════
+                # 4. TEST DE MEMORIA RAM
+                # ═══════════════════════════════════════════════════════
                 echo ""
-                echo -e "${CYAN}Red:${NC}"
-                ip -brief address
+                echo -e "${CYAN}[4/6] Test de Memoria RAM (10GB de transferencia)...${NC}"
                 
-                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
-                    añadir_seccion "$REPORT_FILE" "INFORMACIÓN DE RED"
-                    ip -brief address >> "$REPORT_FILE"
+                if command -v sysbench &> /dev/null; then
+                    añadir_seccion "$REPORT_FILE" "TEST DE MEMORIA RAM"
+                    echo "Prueba de transferencia de 10GB en memoria..." >> "$REPORT_FILE"
                     echo "" >> "$REPORT_FILE"
-                    echo "Interfaces de red:" >> "$REPORT_FILE"
-                    ip link show >> "$REPORT_FILE" 2>/dev/null
+                    
+                    sysbench memory --memory-total-size=10G run 2>&1 | tee -a "$REPORT_FILE"
+                    
+                    echo -e "${GREEN}✓ Completado${NC}"
+                else
+                    echo -e "${RED}⚠ sysbench no instalado, saltando...${NC}"
                 fi
                 
-                # Uptime y load average
+                # ═══════════════════════════════════════════════════════
+                # 5. TEST DE DISCO (I/O)
+                # ═══════════════════════════════════════════════════════
                 echo ""
-                echo -e "${CYAN}Sistema:${NC}"
-                uptime
+                echo -e "${CYAN}[5/6] Test de Disco (lectura/escritura de 1GB)...${NC}"
                 
-                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
-                    añadir_seccion "$REPORT_FILE" "ESTADO DEL SISTEMA"
-                    uptime >> "$REPORT_FILE"
-                    echo "" >> "$REPORT_FILE"
-                    echo "Procesos en ejecución:" >> "$REPORT_FILE"
-                    ps aux --sort=-%cpu | head -15 >> "$REPORT_FILE" 2>/dev/null
-                fi
+                añadir_seccion "$REPORT_FILE" "TEST DE DISCO (I/O)"
+                
+                # Test de ESCRITURA
+                echo "═══ Test de Escritura ═══" >> "$REPORT_FILE"
+                echo "Escribiendo 1GB de datos..." >> "$REPORT_FILE"
+                echo "" >> "$REPORT_FILE"
+                
+                write_result=$(dd if=/dev/zero of=/tmp/lxapp_test_write bs=1M count=1024 conv=fdatasync 2>&1)
+                write_speed=$(echo "$write_result" | grep -oP '\d+(\.\d+)? [MG]B/s' | tail -1)
+                
+                echo "$write_result" >> "$REPORT_FILE"
+                echo "" >> "$REPORT_FILE"
+                echo "Velocidad de escritura: $write_speed" >> "$REPORT_FILE"
+                echo -e "${GREEN}  Escritura: $write_speed${NC}"
+                
+                # Test de LECTURA
+                echo "" >> "$REPORT_FILE"
+                echo "═══ Test de Lectura ═══" >> "$REPORT_FILE"
+                echo "Leyendo 1GB de datos..." >> "$REPORT_FILE"
+                echo "" >> "$REPORT_FILE"
+                
+                # Limpiar cache
+                sync
+                echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null 2>&1
+                
+                read_result=$(dd if=/tmp/lxapp_test_write of=/dev/null bs=1M 2>&1)
+                read_speed=$(echo "$read_result" | grep -oP '\d+(\.\d+)? [MG]B/s' | tail -1)
+                
+                echo "$read_result" >> "$REPORT_FILE"
+                echo "" >> "$REPORT_FILE"
+                echo "Velocidad de lectura: $read_speed" >> "$REPORT_FILE"
+                echo -e "${GREEN}  Lectura: $read_speed${NC}"
+                
+                # Limpiar archivo temporal
+                rm -f /tmp/lxapp_test_write
+                
+                echo -e "${GREEN}✓ Completado${NC}"
+                
+                # ═══════════════════════════════════════════════════════
+                # 6. TEST DE RED (LATENCIA)
+                # ═══════════════════════════════════════════════════════
+                echo ""
+                echo -e "${CYAN}[6/6] Test de Red (latencia a Google DNS)...${NC}"
+                
+                añadir_seccion "$REPORT_FILE" "TEST DE RED (LATENCIA)"
+                echo "Ping a 8.8.8.8 (Google DNS):" >> "$REPORT_FILE"
+                echo "" >> "$REPORT_FILE"
+                
+                ping_result=$(ping -c 10 8.8.8.8 2>&1)
+                echo "$ping_result" >> "$REPORT_FILE"
+                
+                avg_latency=$(echo "$ping_result" | grep 'avg' | awk -F'/' '{print $5}' || echo "N/A")
+                echo "" >> "$REPORT_FILE"
+                echo "Latencia promedio: ${avg_latency} ms" >> "$REPORT_FILE"
+                echo -e "${GREEN}  Latencia promedio: ${avg_latency} ms${NC}"
+                
+                echo -e "${GREEN}✓ Completado${NC}"
+                
+                # ═══════════════════════════════════════════════════════
+                # RESUMEN FINAL
+                # ═══════════════════════════════════════════════════════
+                echo ""
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+                echo -e "${GREEN}       ✓ TODOS LOS TESTS COMPLETADOS                   ${NC}"
+                echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
                 
                 # Finalizar reporte
-                if [[ $guardar_reporte == "s" || $guardar_reporte == "S" ]]; then
-                    finalizar_reporte "$REPORT_FILE"
-                fi
+                finalizar_reporte "$REPORT_FILE"
+                
+                echo ""
+                echo -e "${YELLOW}═══════════════════════════════════════════════════════${NC}"
+                echo -e "${YELLOW}  RESUMEN: Puedes comparar este reporte con otros     ${NC}"
+                echo -e "${YELLOW}  servidores usando los valores numéricos del archivo ${NC}"
+                echo -e "${YELLOW}═══════════════════════════════════════════════════════${NC}"
                 
                 pausar
                 ;;

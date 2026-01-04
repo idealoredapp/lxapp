@@ -5,6 +5,27 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.4.0] - 2026-01-04
+
+### 🚀 Mejorado
+- **Test Completo ahora ejecuta TODOS los benchmarks reales**:
+  - ✅ Test de CPU single-thread (sysbench)
+  - ✅ Test de CPU multi-thread con todos los cores
+  - ✅ Test de Memoria RAM (10GB de transferencia)
+  - ✅ Test de Disco I/O (lectura Y escritura de 1GB)
+  - ✅ Test de Red (latencia con 10 pings)
+- **Reporte automático siempre generado** con resultados numéricos
+- **Resultados comparables** entre diferentes servidores
+- **Tiempo de ejecución**: 3-5 minutos
+- **Interfaz mejorada** con progreso paso a paso [1/6] a [6/6]
+
+### 📊 Características del Reporte
+- Velocidad de escritura/lectura de disco (MB/s o GB/s)
+- Eventos por segundo de CPU
+- Tasa de transferencia de memoria (MB/s)
+- Latencia de red promedio (ms)
+- Información completa del hardware
+
 ## [1.3.0] - 2026-01-04
 
 ### ✨ Añadido
