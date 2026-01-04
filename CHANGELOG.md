@@ -5,6 +5,26 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.1.0] - 2026-01-04
+
+### ✨ Añadido
+- **Módulo Profesional de Gestión de Ceph**:
+  - Selección de versión (Ceph v18 Reef o v19 Squid)
+  - Bootstrap de primer nodo con cephadm
+  - Gestión de nodos adicionales en el cluster
+  - Detección inteligente de discos candidatos para OSDs
+  - Soporte para entornos LOCAL y EXTERNO (datacenter)
+  - Configuración de dashboard con IP interna/externa
+  - Función para purgar clusters rotos por FSID
+  - Validación de IPs y hostnames
+  - Instalación automática de dependencias (podman, chrony, lvm2)
+  - Soporte para contenedores con Podman/Docker
+
+### 🔧 Cambiado
+- Reemplazado módulo básico de Ceph por versión profesional completa
+- Mejorada la experiencia de usuario con validación de entrada
+- Añadida opción para especificar red de cluster personalizada
+
 ## [1.0.0] - 2026-01-04
 
 ### ✨ Añadido
