@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.1.0
+# Versión: 1.2.0
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.1.0                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.2.0                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -42,12 +42,21 @@ submenu_rendimiento() {
         mostrar_encabezado
         echo -e "${GREEN}=== PRUEBAS DE RENDIMIENTO DEL SERVIDOR ===${NC}"
         echo ""
-        echo "1) Test de CPU"
+        echo -e "${CYAN}Pruebas Básicas:${NC}"
+        echo "1) Test de CPU (single-thread)"
         echo "2) Test de Memoria RAM"
-        echo "3) Test de Disco (I/O)"
-        echo "4) Test de Red"
-        echo "5) Test Completo"
-        echo "6) Actualizar Herramientas de Benchmarking"
+        echo "3) Test de Disco (I/O básico)"
+        echo "4) Test de Red (ping + speedtest)"
+        echo "5) Test Completo (resumen)"
+        echo ""
+        echo -e "${CYAN}Pruebas Avanzadas:${NC}"
+        echo "6) Test de CPU Multi-Thread"
+        echo "7) Test de Ancho de Banda de Red (iperf3)"
+        echo "8) Test de Latencia de Disco (ioping)"
+        echo "9) Benchmark de Base de Datos"
+        echo "10) Stress Test del Sistema"
+        echo ""
+        echo "11) Actualizar Herramientas de Benchmarking"
         echo "0) Volver al Menú Principal"
         echo ""
         read -p "Selecciona una opción: " opcion
@@ -55,10 +64,10 @@ submenu_rendimiento() {
         case $opcion in
             1)
                 mostrar_encabezado
-                echo -e "${YELLOW}=== Test de CPU ===${NC}"
+                echo -e "${YELLOW}=== Test de CPU (Single-Thread) ===${NC}"
                 echo "Ejecutando prueba de CPU con sysbench..."
                 if command -v sysbench &> /dev/null; then
-                    sysbench cpu --cpu-max-prime=20000 run
+                    sysbench cpu --cpu-max-prime=20000 --threads=1 run
                 else
                     echo -e "${RED}sysbench no está instalado. Instala con: sudo apt install sysbench${NC}"
                 fi
@@ -80,7 +89,7 @@ submenu_rendimiento() {
                 ;;
             3)
                 mostrar_encabezado
-                echo -e "${YELLOW}=== Test de Disco (I/O) ===${NC}"
+                echo -e "${YELLOW}=== Test de Disco (I/O Básico) ===${NC}"
                 echo "Ejecutando prueba de I/O..."
                 if command -v dd &> /dev/null; then
                     echo "Test de escritura (escribe 1GB):"
@@ -127,11 +136,180 @@ submenu_rendimiento() {
                 ;;
             6)
                 mostrar_encabezado
+                echo -e "${YELLOW}=== Test de CPU Multi-Thread ===${NC}"
+                echo "Detectando número de CPUs/cores..."
+                num_cpus=$(nproc)
+                echo "CPUs detectados: $num_cpus"
+                echo ""
+                echo "Ejecutando benchmark multi-thread con sysbench..."
+                if command -v sysbench &> /dev/null; then
+                    sysbench cpu --cpu-max-prime=20000 --threads=$num_cpus run
+                    echo ""
+                    echo -e "${GREEN}Comparación:${NC}"
+                    echo "- Single-thread: Ejecuta opción 1 para comparar"
+                    echo "- Multi-thread ($num_cpus threads): Resultado mostrado arriba"
+                else
+                    echo -e "${RED}sysbench no está instalado. Instala con: sudo apt install sysbench${NC}"
+                fi
+                pausar
+                ;;
+            7)
+                mostrar_encabezado
+                echo -e "${YELLOW}=== Test de Ancho de Banda de Red (iperf3) ===${NC}"
+                echo ""
+                echo "Opciones:"
+                echo "1) Modo SERVIDOR (escuchar conexiones)"
+                echo "2) Modo CLIENTE (conectar a servidor)"
+                echo ""
+                read -p "Selecciona modo: " modo_iperf
+                
+                if command -v iperf3 &> /dev/null; then
+                    if [[ $modo_iperf == "1" ]]; then
+                        echo -e "${GREEN}Iniciando servidor iperf3 en puerto 5201...${NC}"
+                        echo "En otro servidor, ejecuta: iperf3 -c $(hostname -I | awk '{print $1}')"
+                        echo "Presiona Ctrl+C para detener el servidor"
+                        iperf3 -s
+                    elif [[ $modo_iperf == "2" ]]; then
+                        read -p "IP del servidor iperf3: " server_ip
+                        echo "Conectando a $server_ip..."
+                        iperf3 -c $server_ip
+                    else
+                        echo -e "${RED}Opción inválida${NC}"
+                    fi
+                else
+                    echo -e "${RED}iperf3 no está instalado. Instala con: sudo apt install iperf3${NC}"
+                fi
+                pausar
+                ;;
+            8)
+                mostrar_encabezado
+                echo -e "${YELLOW}=== Test de Latencia de Disco (ioping) ===${NC}"
+                echo ""
+                if command -v ioping &> /dev/null; then
+                    echo "Selecciona disco a probar:"
+                    echo "1) Directorio actual (.)"
+                    echo "2) /tmp"
+                    echo "3) /var"
+                    echo "4) Personalizado"
+                    read -p "Opción: " disco_opt
+                    
+                    case $disco_opt in
+                        1) target="." ;;
+                        2) target="/tmp" ;;
+                        3) target="/var" ;;
+                        4) read -p "Ruta del disco/directorio: " target ;;
+                        *) target="." ;;
+                    esac
+                    
+                    echo ""
+                    echo -e "${GREEN}Probando latencia en: $target${NC}"
+                    echo "Test 1: 10 solicitudes de I/O"
+                    ioping -c 10 $target
+                    echo ""
+                    echo "Test 2: 3 segundos de prueba continua"
+                    ioping -w 3 $target
+                else
+                    echo -e "${RED}ioping no está instalado. Instala con: sudo apt install ioping${NC}"
+                fi
+                pausar
+                ;;
+            9)
+                mostrar_encabezado
+                echo -e "${YELLOW}=== Benchmark de Base de Datos ===${NC}"
+                echo ""
+                echo "Ejecutando benchmark con sysbench (simula carga MySQL/PostgreSQL)..."
+                
+                if command -v sysbench &> /dev/null; then
+                    echo "Preparando test..."
+                    mkdir -p /tmp/sysbench_db_test
+                    cd /tmp/sysbench_db_test
+                    
+                    echo ""
+                    echo "1. Preparando datos de prueba (10,000 filas)..."
+                    sysbench oltp_read_write --tables=2 --table-size=10000 prepare 2>/dev/null || \
+                    sysbench --test=oltp --oltp-table-size=10000 prepare 2>/dev/null
+                    
+                    echo ""
+                    echo "2. Ejecutando benchmark de lectura/escritura..."
+                    sysbench oltp_read_write --tables=2 --table-size=10000 --threads=4 --time=30 run 2>/dev/null || \
+                    sysbench --test=oltp --oltp-table-size=10000 --num-threads=4 --max-time=30 run 2>/dev/null
+                    
+                    echo ""
+                    echo "3. Limpiando datos de prueba..."
+                    sysbench oltp_read_write --tables=2 cleanup 2>/dev/null || \
+                    sysbench --test=oltp cleanup 2>/dev/null
+                    
+                    cd - >/dev/null
+                    rm -rf /tmp/sysbench_db_test
+                    
+                    echo ""
+                    echo -e "${GREEN}Benchmark completado. Verifica las transacciones por segundo (TPS).${NC}"
+                else
+                    echo -e "${RED}sysbench no está instalado. Instala con: sudo apt install sysbench${NC}"
+                fi
+                pausar
+                ;;
+            10)
+                mostrar_encabezado
+                echo -e "${YELLOW}=== Stress Test del Sistema ===${NC}"
+                echo ""
+                echo -e "${RED}⚠️  ADVERTENCIA: Esta prueba pondrá el sistema bajo carga extrema${NC}"
+                read -p "¿Continuar? (si/no): " confirmar
+                
+                if [[ $confirmar == "si" ]]; then
+                    if command -v stress-ng &> /dev/null; then
+                        num_cpus=$(nproc)
+                        echo ""
+                        echo "Configuración del stress test:"
+                        echo "1) Stress ligero (30 segundos)"
+                        echo "2) Stress moderado (60 segundos)"
+                        echo "3) Stress intenso (120 segundos)"
+                        echo "4) Personalizado"
+                        read -p "Selecciona: " stress_opt
+                        
+                        case $stress_opt in
+                            1) tiempo=30; carga="--cpu $num_cpus --vm 2 --vm-bytes 128M" ;;
+                            2) tiempo=60; carga="--cpu $num_cpus --vm 4 --vm-bytes 256M --io 2" ;;
+                            3) tiempo=120; carga="--cpu $num_cpus --vm 4 --vm-bytes 512M --io 4 --hdd 2" ;;
+                            4) 
+                                read -p "Duración en segundos: " tiempo
+                                read -p "Workers de CPU: " cpu_w
+                                read -p "Workers de VM: " vm_w
+                                carga="--cpu ${cpu_w:-$num_cpus} --vm ${vm_w:-2} --vm-bytes 256M"
+                                ;;
+                            *) tiempo=30; carga="--cpu $num_cpus --vm 2 --vm-bytes 128M" ;;
+                        esac
+                        
+                        echo ""
+                        echo -e "${GREEN}Iniciando stress test por ${tiempo}s...${NC}"
+                        echo "Monitorea con 'htop' en otra terminal"
+                        stress-ng $carga --timeout ${tiempo}s --metrics-brief
+                        
+                        echo ""
+                        echo -e "${GREEN}Stress test completado. Revisa las métricas de carga.${NC}"
+                    else
+                        echo -e "${RED}stress-ng no está instalado. Instala con: sudo apt install stress-ng${NC}"
+                    fi
+                else
+                    echo "Stress test cancelado."
+                fi
+                pausar
+                ;;
+            11)
+                mostrar_encabezado
                 echo -e "${YELLOW}=== Actualizar Herramientas de Benchmarking ===${NC}"
                 echo "Actualizando herramientas..."
                 sudo apt update
-                sudo apt install -y sysbench iperf3 speedtest-cli htop
+                sudo apt install -y sysbench iperf3 speedtest-cli htop ioping stress-ng
                 echo -e "${GREEN}Herramientas actualizadas correctamente.${NC}"
+                echo ""
+                echo "Herramientas instaladas:"
+                echo "- sysbench (CPU, RAM, DB)"
+                echo "- iperf3 (Ancho de banda de red)"
+                echo "- speedtest-cli (Velocidad de internet)"
+                echo "- htop (Monitor de procesos)"
+                echo "- ioping (Latencia de disco)"
+                echo "- stress-ng (Stress test)"
                 pausar
                 ;;
             0)

@@ -5,6 +5,29 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.0] - 2026-01-04
+
+### ✨ Añadido
+- **Pruebas Avanzadas de Rendimiento**:
+  - Test de CPU Multi-Thread: Benchmarking con todos los cores disponibles
+  - Test de Ancho de Banda de Red con iperf3: Modo servidor y cliente
+  - Test de Latencia de Disco con ioping: Medición precisa de latencia I/O
+  - Benchmark de Base de Datos: Simula carga MySQL/PostgreSQL con sysbench
+  - Stress Test del Sistema con stress-ng: Carga extrema configurable (ligera/moderada/intensa)
+- Menú reorganizado con secciones "Pruebas Básicas" y "Pruebas Avanzadas"
+- Detección automática de CPUs con `nproc` para tests multi-thread
+- Opciones personalizables en test de latencia de disco y stress test
+
+### 🔧 Cambiado
+- Ampliado menú de rendimiento de 6 a 11 opciones
+- Test de CPU ahora específica single-thread vs multi-thread
+- Actualización de herramientas incluye: ioping y stress-ng
+- Mejorada descripción de cada opción en el menú
+
+### 📦 Herramientas Nuevas
+- `ioping` - Latencia de disco
+- `stress-ng` - Stress testing avanzado
+
 ## [1.1.0] - 2026-01-04
 
 ### ✨ Añadido
