@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.5.0
+# Versión: 1.6.0
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.5.0                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.6.0                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -1275,6 +1275,7 @@ menu_principal() {
         echo "3) Monitorización del Sistema"
         echo "4) Actualizar Sistema Completo"
         echo "5) Información del Sistema"
+        echo "6) Instalar Nextcloud"
         echo "0) Salir"
         echo ""
         read -p "Selecciona una opción: " opcion
@@ -1309,10 +1310,43 @@ menu_principal() {
                 echo -e "${YELLOW}=== Información del Sistema ===${NC}"
                 echo "Hostname: $(hostname)"
                 echo "Kernel: $(uname -r)"
-                echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2)"
+                echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'\"' -f2)"
                 echo "Uptime: $(uptime -p)"
                 echo "CPU: $(lscpu | grep "Model name" | cut -d':' -f2 | xargs)"
                 echo "Memoria Total: $(free -h | grep Mem | awk '{print $2}')"
+                pausar
+                ;;
+            6)
+                mostrar_encabezado
+                echo -e "${YELLOW}=== Instalar Nextcloud ===${NC}"
+                echo ""
+                echo "Nextcloud es una plataforma de colaboración y almacenamiento en la nube"
+                echo "autohospedada que te permite tener control total sobre tus datos."
+                echo ""
+                echo "El instalador configurará:"
+                echo "  • Nginx como servidor web"
+                echo "  • MariaDB o PostgreSQL (a elegir)"
+                echo "  • PHP con todas las extensiones necesarias"
+                echo "  • Redis para caché (opcional)"
+                echo "  • SSL/HTTPS con Let's Encrypt (opcional)"
+                echo ""
+                read -p "¿Continuar con la instalación? (s/n): " confirmar_nc
+                
+                if [[ $confirmar_nc == "s" || $confirmar_nc == "S" ]]; then
+                    # Verificar que el script existe
+                    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+                    NC_INSTALLER="$SCRIPT_DIR/nextcloud-installer.sh"
+                    
+                    if [[ -f "$NC_INSTALLER" ]]; then
+                        chmod +x "$NC_INSTALLER"
+                        bash "$NC_INSTALLER"
+                    else
+                        echo -e "${RED}ERROR: No se encuentra el instalador de Nextcloud${NC}"
+                        echo "Buscado en: $NC_INSTALLER"
+                    fi
+                else
+                    echo "Instalación de Nextcloud cancelada."
+                fi
                 pausar
                 ;;
             0)

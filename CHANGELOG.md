@@ -5,6 +5,32 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.6.0] - 2026-01-25
+
+### ✨ Añadido
+- **Instalador de Nextcloud integrado (opción 6)**
+  - Instalación completa de Nextcloud con asistente interactivo
+  - Configuración automática de Nginx como servidor web
+  - Elección entre MariaDB o PostgreSQL como base de datos
+  - Configuración de PHP con todas las extensiones necesarias
+  - Redis opcional para caché de rendimiento
+  - SSL/HTTPS opcional con Let's Encrypt (Certbot)
+  - Configuración automática de UFW (firewall)
+- **Menú post-instalación Nextcloud (nc-menu)**
+  - Ver estado de servicios y Nextcloud
+  - Añadir dominios de confianza (trusted domains)
+  - Migrar de IP a dominio
+  - Activar SSL después de instalación
+  - Maintenance mode on/off
+  - Backup completo (DB + archivos + datos)
+  - Ejecutar comandos occ personalizados
+  - Ver logs de Nginx y Nextcloud
+  - Reparar y validar stack completo
+
+### 📦 Archivos nuevos
+- `nextcloud-installer.sh` - Script standalone de instalación
+- Instalador guardado en `/usr/local/bin/nc-menu` tras instalación
+
 ## [1.5.0] - 2026-01-04
 
 ### ✨ Añadido
