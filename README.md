@@ -2,7 +2,7 @@
 
 Script interactivo con menús modulares para la administración y monitorización de servidores Linux, con módulo profesional de gestión de Ceph Storage.
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)
 ![Ceph](https://img.shields.io/badge/ceph-v18%20%7C%20v19-red.svg)
@@ -13,13 +13,16 @@ Script interactivo con menús modulares para la administración y monitorizació
 ## 📋 Características
 
 - **Menú Modular**: Navegación intuitiva entre diferentes módulos
-- **Pruebas de Rendimiento**: Tests de CPU, Memoria, Disco y Red
-- **Gestión Profesional de Ceph**: 
+- **Pruebas de Rendimiento**: Tests de CPU, Memoria, Disco y Red (12 opciones)
+- **Gestión Profesional de Ceph**:
   - Selección de versión (v18 Reef / v19 Squid)
   - Bootstrap y configuración de clusters
   - Gestión de nodos y OSDs
   - Soporte para entornos LOCAL y EXTERNO (datacenter)
+- **Instalador de Nextcloud**: Instalación guiada con Nginx, MariaDB/PostgreSQL, Redis y SSL
+- **Instalador de Docker CE**: Última versión desde repositorio oficial con docker-compose
 - **Monitorización en Tiempo Real**: Seguimiento de procesos, servicios y recursos
+- **Sistema de Reportes**: Generación automática en `~/lxapp_reports/`
 - **Actualización Independiente**: Actualiza solo los componentes que necesites
 - **Interfaz Colorida**: Mejor visualización con códigos de color ANSI
 
@@ -59,6 +62,8 @@ Al ejecutar el script, verás el menú principal con las siguientes opciones:
 3) Monitorización del Sistema
 4) Actualizar Sistema Completo
 5) Información del Sistema
+6) Instalar Nextcloud
+7) Instalar Docker (última versión)
 0) Salir
 ```
 
@@ -176,20 +181,23 @@ El script utiliza las siguientes herramientas (se instalan automáticamente si f
 
 Ver el archivo [CHANGELOG.md](CHANGELOG.md) para el historial completo de cambios.
 
-### Versión Actual: 1.3.0
+### Versión Actual: 1.7.0
 
-- ✅ Menú principal con navegación modular
-- ✅ **Módulo de pruebas de rendimiento ampliado** (12 opciones)
+- ✅ Menú principal con navegación modular (7 opciones)
+- ✅ **Módulo de pruebas de rendimiento** (12 opciones)
   - Pruebas básicas: CPU, RAM, Disco, Red
   - Pruebas avanzadas: Multi-thread, iperf3, ioping, DB, stress-ng
+  - Sistema de reportes en `~/lxapp_reports/`
 - ✅ **Módulo profesional de gestión de Ceph (v18/v19)**
-- ✅ **Sistema de reportes guardables en archivos**
-  - Generación automática en ~/lxapp_reports/
-  - Ver y gestionar reportes guardados
-  - Formato profesional con timestamp
-- ✅ Módulo de monitorización del sistema
-- ✅ Bootstrap y gestión de clusters Ceph
-- ✅ Soporte para entornos LOCAL y EXTERNO
+  - Bootstrap de cluster, nodos adicionales, OSDs
+  - Entornos LOCAL y EXTERNO (datacenter)
+- ✅ **Monitorización del sistema** (htop, ss, df, sysstat)
+- ✅ **Instalador de Nextcloud** (Nginx + MariaDB/PostgreSQL + Redis + SSL)
+- ✅ **Instalador de Docker CE** (última versión oficial + docker-compose)
+  - Repositorio oficial Docker con clave GPG
+  - Detección automática de distro (Ubuntu/Debian/Raspbian/Mint)
+  - Habilita servicio systemd y gestión de permisos de usuario
+- ✅ Compatible con root y sudo (contenedores LXC/VPS)
 
 ## 🤝 Contribuir
 
