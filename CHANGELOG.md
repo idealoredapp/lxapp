@@ -5,6 +5,23 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.7.0] - 2026-04-19
+
+### ✨ Añadido
+- **Instalador de Docker CE (opción 7 en menú principal)**
+  - Usa el repositorio oficial de Docker para instalar la última versión estable
+  - Instala: `docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin`, `docker-compose-plugin`
+  - Detecta y elimina automáticamente paquetes conflictivos (`docker.io`, `podman-docker`, etc.)
+  - Detección automática de distribución (Ubuntu, Debian, Raspbian, Linux Mint, Pop!_OS)
+  - Configura clave GPG y repositorio oficial de Docker
+  - Habilita e inicia el servicio `docker` en systemd
+  - Opción para añadir el usuario actual al grupo `docker` (sin sudo)
+  - Verifica la instalación con `docker run hello-world`
+  - Detecta si Docker ya está instalado y ofrece reinstalar/actualizar
+  - Compatible con root y con sudo
+
+---
+
 ## [1.6.0] - 2026-01-25
 
 ### ✨ Añadido
@@ -218,7 +235,6 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ### 📋 Planificado para Futuras Versiones
 - Soporte para más distribuciones Linux (CentOS, RHEL, Arch)
-- Módulo de gestión de Docker y contenedores
 - Módulo de gestión de bases de datos
 - Exportación de reportes de rendimiento
 - Configuración personalizable mediante archivo de configuración

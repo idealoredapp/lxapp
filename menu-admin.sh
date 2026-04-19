@@ -2,7 +2,7 @@
 
 #########################################
 # LXApp - Sistema de Administración de Servidores
-# Versión: 1.6.0
+# Versión: 1.7.0
 # Autor: idealored (www.idealored.com)
 # Repositorio: github.com/idealoredapp/lxapp
 # Menú Principal con Submenús Modulares
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 mostrar_encabezado() {
     clear
     echo -e "${CYAN}╔════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              🖥️  LXApp v1.6.0                  ║${NC}"
+    echo -e "${CYAN}║              🖥️  LXApp v1.7.0                  ║${NC}"
     echo -e "${CYAN}║   Sistema de Administración de Servidores      ║${NC}"
     echo -e "${CYAN}║        www.idealored.com                       ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════════╝${NC}"
@@ -1263,6 +1263,189 @@ submenu_monitorizacion() {
 }
 
 #########################################
+# INSTALACIÓN DE DOCKER
+#########################################
+instalar_docker() {
+    mostrar_encabezado
+    echo -e "${YELLOW}=== Instalar Docker (última versión) ===${NC}"
+    echo ""
+    echo "Este instalador usará el script oficial de Docker para instalar"
+    echo "la última versión de Docker CE (Community Edition)."
+    echo ""
+    echo "Se instalará:"
+    echo "  • docker-ce (motor Docker)"
+    echo "  • docker-ce-cli (cliente)"
+    echo "  • containerd.io"
+    echo "  • docker-buildx-plugin"
+    echo "  • docker-compose-plugin"
+    echo ""
+
+    # Verificar si ya está instalado
+    if command -v docker &> /dev/null; then
+        echo -e "${GREEN}Docker ya está instalado:${NC}"
+        docker --version
+        echo ""
+        read -p "¿Reinstalar/actualizar Docker? (s/n): " reinstalar
+        if [[ $reinstalar != "s" && $reinstalar != "S" ]]; then
+            echo "Instalación cancelada."
+            pausar
+            return
+        fi
+    fi
+
+    # Verificar permisos
+    SUDO_CMD=""
+    if [[ $EUID -ne 0 ]]; then
+        if command -v sudo &> /dev/null; then
+            SUDO_CMD="sudo"
+        else
+            echo -e "${RED}ERROR: Se requieren permisos de root o sudo para instalar Docker.${NC}"
+            pausar
+            return
+        fi
+    fi
+
+    # Detectar distribución
+    DISTRO_ID="$(. /etc/os-release 2>/dev/null && echo "$ID")"
+    echo -e "${CYAN}Distribución detectada: ${DISTRO_ID}${NC}"
+    echo ""
+
+    case "$DISTRO_ID" in
+        ubuntu|debian|raspbian|linuxmint|pop)
+            : # ok, soportado
+            ;;
+        *)
+            echo -e "${YELLOW}⚠️  Distribución '${DISTRO_ID}' puede no estar soportada oficialmente.${NC}"
+            read -p "¿Continuar de todas formas? (s/n): " forzar
+            if [[ $forzar != "s" && $forzar != "S" ]]; then
+                echo "Instalación cancelada."
+                pausar
+                return
+            fi
+            ;;
+    esac
+
+    read -p "¿Continuar con la instalación de Docker? (s/n): " confirmar_docker
+    if [[ $confirmar_docker != "s" && $confirmar_docker != "S" ]]; then
+        echo "Instalación cancelada."
+        pausar
+        return
+    fi
+
+    echo ""
+    echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}Iniciando instalación de Docker...${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+    echo ""
+
+    # ─── Paso 1: Desinstalar versiones antiguas / conflictivas ───────────────
+    echo -e "${CYAN}[1/5] Eliminando paquetes conflictivos...${NC}"
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
+        $SUDO_CMD apt-get remove -y "$pkg" 2>/dev/null || true
+    done
+    echo -e "${GREEN}  ✓ Listo${NC}"
+
+    # ─── Paso 2: Actualizar repos e instalar prerequisitos ───────────────────
+    echo ""
+    echo -e "${CYAN}[2/5] Actualizando repositorios e instalando dependencias...${NC}"
+    $SUDO_CMD apt-get update -y
+    $SUDO_CMD apt-get install -y ca-certificates curl gnupg lsb-release
+    echo -e "${GREEN}  ✓ Listo${NC}"
+
+    # ─── Paso 3: Añadir clave GPG y repositorio oficial Docker ───────────────
+    echo ""
+    echo -e "${CYAN}[3/5] Configurando repositorio oficial de Docker...${NC}"
+
+    $SUDO_CMD install -m 0755 -d /etc/apt/keyrings
+
+    case "$DISTRO_ID" in
+        ubuntu|linuxmint|pop)
+            DOCKER_GPG_URL="https://download.docker.com/linux/ubuntu/gpg"
+            DOCKER_REPO_URL="https://download.docker.com/linux/ubuntu"
+            VERSION_CODENAME="$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")"
+            ;;
+        debian|raspbian)
+            DOCKER_GPG_URL="https://download.docker.com/linux/debian/gpg"
+            DOCKER_REPO_URL="https://download.docker.com/linux/debian"
+            VERSION_CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+            ;;
+        *)
+            DOCKER_GPG_URL="https://download.docker.com/linux/debian/gpg"
+            DOCKER_REPO_URL="https://download.docker.com/linux/debian"
+            VERSION_CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+            ;;
+    esac
+
+    curl -fsSL "$DOCKER_GPG_URL" | $SUDO_CMD gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    $SUDO_CMD chmod a+r /etc/apt/keyrings/docker.gpg
+
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+$DOCKER_REPO_URL $VERSION_CODENAME stable" | \
+        $SUDO_CMD tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    $SUDO_CMD apt-get update -y
+    echo -e "${GREEN}  ✓ Listo${NC}"
+
+    # ─── Paso 4: Instalar Docker CE ──────────────────────────────────────────
+    echo ""
+    echo -e "${CYAN}[4/5] Instalando Docker CE (última versión)...${NC}"
+    $SUDO_CMD apt-get install -y \
+        docker-ce \
+        docker-ce-cli \
+        containerd.io \
+        docker-buildx-plugin \
+        docker-compose-plugin
+    echo -e "${GREEN}  ✓ Docker instalado${NC}"
+
+    # ─── Paso 5: Configuración post-instalación ──────────────────────────────
+    echo ""
+    echo -e "${CYAN}[5/5] Configuración post-instalación...${NC}"
+
+    # Activar e iniciar servicio
+    $SUDO_CMD systemctl enable docker
+    $SUDO_CMD systemctl start docker
+    echo -e "${GREEN}  ✓ Servicio Docker activado e iniciado${NC}"
+
+    # Añadir usuario actual al grupo docker (si no es root)
+    if [[ $EUID -ne 0 ]]; then
+        echo ""
+        read -p "¿Añadir el usuario '$(whoami)' al grupo 'docker' (sin sudo)? (s/n): " add_grp
+        if [[ $add_grp == "s" || $add_grp == "S" ]]; then
+            $SUDO_CMD usermod -aG docker "$(whoami)"
+            echo -e "${GREEN}  ✓ Usuario añadido al grupo docker${NC}"
+            echo -e "${YELLOW}  ⚠️  Cierra sesión y vuelve a entrar para que el cambio surta efecto.${NC}"
+        fi
+    fi
+
+    # ─── Verificación ────────────────────────────────────────────────────────
+    echo ""
+    echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}       ✓ DOCKER INSTALADO CORRECTAMENTE                ${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
+    echo ""
+
+    if command -v docker &> /dev/null; then
+        echo -e "${CYAN}Versión instalada:${NC}"
+        docker --version
+        docker compose version 2>/dev/null || true
+        echo ""
+        echo -e "${CYAN}Probando Docker con hello-world...${NC}"
+        $SUDO_CMD docker run --rm hello-world 2>&1 | head -5
+    else
+        echo -e "${RED}ERROR: Docker no se instaló correctamente.${NC}"
+    fi
+
+    echo ""
+    echo -e "${CYAN}Comandos útiles:${NC}"
+    echo "  docker ps             → listar contenedores activos"
+    echo "  docker images         → listar imágenes"
+    echo "  docker compose up -d  → levantar stack docker-compose"
+    echo "  systemctl status docker → estado del servicio"
+
+    pausar
+}
+
+#########################################
 # MENÚ PRINCIPAL
 #########################################
 menu_principal() {
@@ -1276,6 +1459,7 @@ menu_principal() {
         echo "4) Actualizar Sistema Completo"
         echo "5) Información del Sistema"
         echo "6) Instalar Nextcloud"
+        echo "7) Instalar Docker (última versión)"
         echo "0) Salir"
         echo ""
         read -p "Selecciona una opción: " opcion
@@ -1348,6 +1532,9 @@ menu_principal() {
                     echo "Instalación de Nextcloud cancelada."
                 fi
                 pausar
+                ;;
+            7)
+                instalar_docker
                 ;;
             0)
                 mostrar_encabezado
